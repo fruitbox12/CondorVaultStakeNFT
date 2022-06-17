@@ -54,8 +54,8 @@ export const Footer = () => (
               Product
             </Text>
             <Stack spacing="3" shouldWrapChildren>
-              <Button variant="link">How it works</Button>
-              <Button variant="link">Pricing</Button>
+              <Button variant="link">Buy Spore</Button>
+              <Button variant="link">Buy Condor</Button>
               <Button variant="link">Use Cases</Button>
             </Stack>
           </Stack>

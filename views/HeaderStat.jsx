@@ -1,7 +1,7 @@
 import { Box, Heading, Stack, Text, useBreakpointValue, useColorModeValue } from '@chakra-ui/react'
 import * as React from 'react'
 
-export const Stat = (props) => {
+export const HeaderStat = (props) => {
   const { label, value, ...boxProps } = props
   return (
     <Box

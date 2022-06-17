@@ -28,6 +28,10 @@ import {
   StatLabel,
   useBreakpointValue,
   useColorModeValue,
+  Skeleton,
+  useToast,
+  Image,
+  Center
 } from '@chakra-ui/react'
 
 import { FaFeather, FaExternalLinkAlt, FaBolt, FaAngleDoubleDown, FaAngleDoubleUp, FaCoins } from 'react-icons/fa'
@@ -53,11 +57,12 @@ export default function Home() {
     base: false,
     lg: true,
   })
+
+  const toast = useToast()
   
   const [injectedProvider, setInjectedProvider] = useState(provider)
   const [injectedSigner, setInjectedSigner] = useState(signer)
   const [address, setAddress] = useState()
-  const [count, setCount] = useState(0)
 
   const [totalStakedAmount, setTotalStakedAmount] = useState()
   const [priceCondorNFT, setPriceCondorNFT] = useState()
@@ -113,7 +118,7 @@ export default function Home() {
     setUserAllowanceStakeNFT(allowanceStakedNFT)
     setUserAvailableStaking(availableStaking)
 
-    console.log("address mainnet bnb balance", ethers.utils.formatEther(balanceBnb))
+    /*console.log("address mainnet bnb balance", ethers.utils.formatEther(balanceBnb))
     console.log("address mainnet spore balance", ethers.utils.formatEther(balanceSpore))
     console.log("address mainnet condor balance", ethers.utils.formatEther(balanceCondor))
     console.log("address mainnet power balance", ethers.utils.formatEther(balancePower))
@@ -124,7 +129,7 @@ export default function Home() {
     console.log("address mainnet power sale allowance", ethers.utils.formatEther(allowancePurchasePower))
     console.log("address mainnet nft sale allowance", ethers.utils.formatEther(allowancePurchaseNFT))
     console.log("address mainnet nft staking allowance", allowanceStakedNFT)
-    console.log("address mainnet nft staking available", parseInt(availableStaking))
+    console.log("address mainnet nft staking available", parseInt(availableStaking))*/
   }
 
   const loadContracts = async () => {
@@ -170,14 +175,26 @@ export default function Home() {
   const getCondorNFT = async () => {
 
     if(!address || !userSporeBalance || !priceCondorNFT) {
-      console.log("display init error msgs")
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     const input = document.querySelector('#inputGetCondorNFT')
 
     if(!Number.isInteger(parseInt(input.value)) || parseInt(input.value) == 0 || input.value.length == 0) {
-      console.log("display not numeric input error msgs")
+      toast({
+        title: 'Only Numbers',
+        description: "Please use only round numbers with no decimal places.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
@@ -185,35 +202,89 @@ export default function Home() {
     const formattedValue = parseInt(ethers.utils.parseEther(inputValue.toString()))
     
     if(formatNumber(userSporeBalance) < inputValue) {
-      console.log("display not enough funds error msgs")
+      toast({
+        title: 'Not Enough Funds',
+        description: "Please make sure you have enough funds to proceed.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     if(parseInt(userAllowancePurchaseNFT) < formattedValue) {
-      console.log("approving the nft sale contract to spend your spore")
+      toast({
+        title: 'Approve Transaction',
+        description: "Please approve the sale contract to spend your Spore.",
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      })
+      
       const sporeContractSigner = sporeContract.connect(injectedSigner);
       const approveTX = await sporeContractSigner.approve(NFTSALE.address, formattedValue.toString())
-      console.log("approving the spent...")
+      
+      toast({
+        title: 'Approving Transaction',
+        description: "Please wait until the transaction is approved.",
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      })
+
       await approveTX.wait()
 
       if(approveTX) {
-        console.log("approve success!")
+        toast({
+          title: 'Approve Success!',
+          description: "You have successfully approved the request.",
+          status: 'success',
+          duration: 6000,
+          isClosable: true,
+        })
         setUserAllowancePurchaseNFT(formattedValue)
       }
     }
 
-    console.log("begin purchase of the nfts")
+    toast({
+      title: 'Confirm Transaction',
+      description: "Please confirm the transaction in your wallet to proceed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
 
     const nftSaleContractSigner = nftSaleContract.connect(injectedSigner)
     const approvePurchaseTX = await nftSaleContractSigner.purchase(address, NFT_KEY, input.value, "0x0000")
-    console.log("purchasing the nfts...")
+    
+    toast({
+      title: 'Confirming Transaction',
+      description: "Please wait until the transaction is confirmed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
+
     await approvePurchaseTX.wait()
     
     if(!approvePurchaseTX) {
-      console.log("error purchasing nfts")
+      toast({
+        title: 'Transaction Failed',
+        description: "Please refresh the page and try again.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
     }
 
-    console.log("nfts purchased")
+    toast({
+      title: 'Transaction Success!',
+      description: "You have successfully purchased the nfts.",
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    })
+
     input.value = ''
     updateUserBalances(address)
   }
@@ -221,14 +292,26 @@ export default function Home() {
   const getSporePower = async () => {
 
     if(!address || !userSporeBalance) {
-      console.log("display init error msgs")
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     const input = document.querySelector('#inputGetSporePower')
 
     if(!Number.isInteger(parseInt(input.value)) || parseInt(input.value) == 0 || input.value.length == 0) {
-      console.log("display not numeric input error msgs")
+      toast({
+        title: 'Only Numbers',
+        description: "Please use only round numbers with no decimal places.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
@@ -236,35 +319,88 @@ export default function Home() {
     const inputValue = parseInt(input.value)
 
     if(formatNumber(userSporeBalance) < inputValue) {
-      console.log("display not enough funds error msgs")
+      toast({
+        title: 'Not Enough Funds',
+        description: "Please make sure you have enough funds to proceed.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     if(parseInt(userAllowancePurchasePower) < parseInt(formattedValue)) {
-      console.log("approving the power sale contract to spend your spore")
+      toast({
+        title: 'Approve Transaction',
+        description: "Please approve the sale contract to spend your Spore.",
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      })
+
       const sporeContractSigner = sporeContract.connect(injectedSigner);
       const approveTX = await sporeContractSigner.approve(POWERSALE.address, formattedValue)
-      console.log("approving the spent...")
+      
+      toast({
+        title: 'Approving Transaction',
+        description: "Please wait until the transaction is approved.",
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      })
+
       await approveTX.wait()
 
       if(approveTX) {
-        console.log("approve success!")
+        toast({
+          title: 'Approve Success!',
+          description: "You have successfully approved the request.",
+          status: 'success',
+          duration: 6000,
+          isClosable: true,
+        })
         setUserAllowancePurchasePower(formattedValue)
       }
     }
 
-    console.log("begin purchase of the tokens")
+    toast({
+      title: 'Confirm Transaction',
+      description: "Please confirm the transaction in your wallet to proceed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
 
     const powerSaleContractSigner = powerSaleContract.connect(injectedSigner)
     const approvePurchaseTX = await powerSaleContractSigner.purchase(formattedValue)
-    console.log("purchasing the tokens...")
+    
+    toast({
+      title: 'Confirming Transaction',
+      description: "Please wait until the transaction is confirmed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
+
     await approvePurchaseTX.wait()
     
     if(!approvePurchaseTX) {
-      console.log("error purchasing spore power")
+      toast({
+        title: 'Transaction Failed',
+        description: "Please refresh the page and try again.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
     }
 
-    console.log("spore power purchased")
+    toast({
+      title: 'Transaction Success!',
+      description: "You have successfully purchased the tokens.",
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    })
     input.value = ''
     updateUserBalances(address)
   }
@@ -272,54 +408,124 @@ export default function Home() {
   const stakeCondorNFT = async () => {
 
     if(!address || !userNFTBalance || !userAvailableStaking) {
-      console.log("display init error msgs")
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     const input = document.querySelector('#inputStakeCondorNFT')
 
     if(!Number.isInteger(parseInt(input.value)) || parseInt(input.value) == 0 || input.value.length == 0) {
-      console.log("display not numeric input error msgs")
+      toast({
+        title: 'Only Numbers',
+        description: "Please use only round numbers with no decimal places.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     const inputValue = parseInt(input.value)
 
     if(parseInt(userAvailableStaking) == 0) {
-      console.log("display not available staking slots error msgs")
+      toast({
+        title: 'No Slot Available',
+        description: "You can stake 1 NFT by 5 Spore Power you hold.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     if(parseInt(userNFTBalance) < inputValue) {
-      console.log("display not enough funds error msgs")
+      toast({
+        title: 'Not Enough Funds',
+        description: "Please make sure you have enough funds to proceed.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     if(userAllowanceStakeNFT == false) {
-      console.log("approving the staking contract to use NFTs")
+      toast({
+        title: 'Approve NFTs',
+        description: "Please approve the staking contract to use your NFTs.",
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      })
       const nftContractSigner = nftContract.connect(injectedSigner);
       const approveTX = await nftContractSigner.setApprovalForAll(STAKING.address, true)
-      console.log("approving the use of NFTs...")
+      
+      toast({
+        title: 'Approving NFTs',
+        description: "Please wait until the NFTs are approved.",
+        status: 'info',
+        duration: 6000,
+        isClosable: true,
+      })
+
       await approveTX.wait()
 
       if(approveTX) {
-        console.log("approve success!")
+        toast({
+          title: 'Approve Success!',
+          description: "You have successfully approved the request.",
+          status: 'success',
+          duration: 6000,
+          isClosable: true,
+        })
         setUserAllowanceStakeNFT(true)
       }
     }
 
-    console.log("begin staking the NFTs")
+    toast({
+      title: 'Confirm Transaction',
+      description: "Please confirm the transaction in your wallet to proceed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
 
     const stakingContractSigner = stakingContract.connect(injectedSigner)
     const approveStakingTX = await stakingContractSigner.stake(inputValue, "0x0000")
-    console.log("staking the tokens...")
+    
+    toast({
+      title: 'Confirming Transaction',
+      description: "Please wait until the transaction is confirmed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
+
     await approveStakingTX.wait()
     
     if(!approveStakingTX) {
-      console.log("error staking NFTs")
+      toast({
+        title: 'Transaction Failed',
+        description: "Please refresh the page and try again.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
     }
 
-    console.log("NFTs staked!")
+    toast({
+      title: 'NFTs Staked!',
+      description: "You have successfully staked your nfts.",
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    })
     input.value = ''
     updateUserBalances(address)
   }
@@ -327,36 +533,80 @@ export default function Home() {
   const unstakeCondorNFT = async () => {
 
     if(!address || !userNFTBalance || !userStakedBalance) {
-      console.log("display init error msgs")
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     const input = document.querySelector('#inputUnstakeCondorNFT')
 
     if(!Number.isInteger(parseInt(input.value)) || parseInt(input.value) == 0 || input.value.length == 0) {
-      console.log("display not numeric input error msgs")
+      toast({
+        title: 'Only Numbers',
+        description: "Please use only round numbers with no decimal places.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
     const inputValue = parseInt(input.value)
 
     if(inputValue > parseInt(userStakedBalance)) {
-      console.log("display not available NFTs error msgs")
+      toast({
+        title: 'Not Available',
+        description: "You don't have that amount of NFTs staked.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return;
     }
 
-    console.log("unstaking the NFTs")
+    toast({
+      title: 'Confirm Transaction',
+      description: "Please confirm the transaction in your wallet to proceed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
 
     const stakingContractSigner = stakingContract.connect(injectedSigner)
     const approveStakingTX = await stakingContractSigner.unstake(inputValue, "0x0000")
-    console.log("unstaking the tokens...")
+    
+    toast({
+      title: 'Confirming Transaction',
+      description: "Please wait until the transaction is confirmed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
+
     await approveStakingTX.wait()
     
     if(!approveStakingTX) {
-      console.log("error unstaking NFTs")
+      toast({
+        title: 'Transaction Failed',
+        description: "Please refresh the page and try again.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
     }
 
-    console.log("NFTs unstaked!")
+    toast({
+      title: 'NFTs Unstaked!',
+      description: "You have successfully unstaked the nfts.",
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    })
     input.value = ''
     updateUserBalances(address)
   }
@@ -364,53 +614,127 @@ export default function Home() {
   const claimRewads = async () => {
 
     if(!address || !userPendingRewards) {
-      console.log("display init error msgs")
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return
     }
 
     if(userPendingRewards == 0) {
-      console.log("display not enough funds to claim error msgs")
+      toast({
+        title: 'Not Available',
+        description: "You don't have any pending rewards.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
       return
     }
 
-    console.log("begin claiming rewards")
+    toast({
+      title: 'Confirm Transaction',
+      description: "Please confirm the transaction in your wallet to proceed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
 
     const stakingSaleContractSigner = stakingContract.connect(injectedSigner)
     const approveClaimTX = await stakingSaleContractSigner.claim()
-    console.log("claiming the tokens...")
+    
+    toast({
+      title: 'Confirming Transaction',
+      description: "Please wait until the transaction is confirmed.",
+      status: 'info',
+      duration: 6000,
+      isClosable: true,
+    })
+
     await approveClaimTX.wait()
     
     if(!approveClaimTX) {
-      console.log("error claiming rewards")
+      toast({
+        title: 'Transaction Failed',
+        description: "Please refresh the page and try again.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
     }
 
-    console.log("rewards claimed!")
+    toast({
+      title: 'Rewards Claimed!',
+      description: "You have successfully claimed your rewards.",
+      status: 'success',
+      duration: 6000,
+      isClosable: true,
+    })
     updateUserBalances(address)
   }
 
   const getMaxSporePower = async () => {
-    if(address && userSporeBalance) {
-      document.querySelector('#inputGetSporePower').value = formatNumber(userSporeBalance)
+    if(!address || !userSporeBalance) {
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
+      return
     }
+    
+    document.querySelector('#inputGetSporePower').value = formatNumber(userSporeBalance)
   }
 
   const getMaxCondorNFT = async () => {
-    if(address && userSporeBalance && priceCondorNFT) {
-      const maxPurchase = parseInt(formatNumber(userSporeBalance)/formatNumber(priceCondorNFT))
-      document.querySelector('#inputGetCondorNFT').value = maxPurchase
+    if(!address || !userSporeBalance || !priceCondorNFT) {
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
+      return
     }
+
+    const maxPurchase = parseInt(formatNumber(userSporeBalance)/formatNumber(priceCondorNFT))
+    document.querySelector('#inputGetCondorNFT').value = maxPurchase
   }
 
   const getMaxStakeNFT = async () => {
-    if(address && userNFTBalance) {
-      document.querySelector('#inputStakeCondorNFT').value = parseInt(userNFTBalance)
+    if(!address || !userNFTBalance) {
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
+      return
     }
+
+    document.querySelector('#inputStakeCondorNFT').value = parseInt(userNFTBalance)
   }
 
   const getMaxUnstakeNFT = async () => {
-    if(address && userStakedBalance) {
-      document.querySelector('#inputUnstakeCondorNFT').value = parseInt(userStakedBalance)
+    if(!address || !userStakedBalance) {
+      toast({
+        title: 'Connect Wallet',
+        description: "Please connect your wallet and wait for the page to load.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
+      return
     }
+
+    document.querySelector('#inputUnstakeCondorNFT').value = parseInt(userStakedBalance)
   }
 
   const connect = useCallback(async () => {
@@ -422,18 +746,35 @@ export default function Home() {
         const net = await provider.getNetwork()
 
         connection.on("chainChanged", chainId => {
-            console.log(`chain changed to ${chainId}! updating providers`);
-            setNetwork(chainId);
-        });
+            if(chainId != 56) {
+              toast({
+                title: 'Wrong Network',
+                description: "Please connect to the Binance Smart Chain network.",
+                status: 'error',
+                duration: 6000,
+                isClosable: true,
+              })
+            }
+        })
       
         connection.on("accountsChanged", (accounts) => {
-            console.log(`account changed!`, accounts[0]);
-            setAddress(accounts[0]);
-            
+            setAddress(accounts[0])
+
+            setUserBnbBalance(0)
+            setUserSporeBalance(0)
+            setUserCondorBalance(0)
+            setUserPowerBalance(0)
+            setUserStakedBalance(0)
+            setUserPendingRewards(0)
+            setUserNFTBalance(0)
+
+            setUserAllowancePurchasePower(0)
+            setUserAllowancePurchaseNFT(0)
+            setUserAllowanceStakeNFT(0)
+            setUserAvailableStaking(0)
         });
       
         connection.on("disconnect", (code, reason) => {
-            console.log(code, reason);
             disconnect()
         });
 
@@ -442,21 +783,33 @@ export default function Home() {
           setInjectedSigner(signer)
         }
         else{
-          console.log("wrong network")
+          toast({
+            title: 'Wrong Network',
+            description: "Please connect to the Binance Smart Chain network.",
+            status: 'error',
+            duration: 6000,
+            isClosable: true,
+          })
         }
 
         setAddress(address)
     } catch (error) {
-        console.log("error on connect wallet", error)
+      toast({
+        title: 'Connect Error',
+        description: "Please refresh the page and try again.",
+        status: 'error',
+        duration: 6000,
+        isClosable: true,
+      })
     }
   }, [])
 
   const disconnect = useCallback(async function () {
-      await web3Modal.clearCachedProvider()
-      setAddress('')
-      setInjectedProvider('')
-      setInjectedSigner('')
-      //add page refresh
+    setAddress('')
+    setInjectedProvider('')
+    setInjectedSigner('')
+    await web3Modal.clearCachedProvider()
+    location.reload()
   }, [injectedProvider])
 
 
@@ -481,7 +834,6 @@ useEffect(() => {
 useEffect(() => {
   if(address) {
     updateUserBalances(address)
-    console.log("address fetched from home", address)
   }
 }, [address])
 
@@ -495,11 +847,11 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [address])
 
-
   return (
     <>
     <Head>
         <title>Condor Staking NFT UI</title>
+        <link rel="shortcut icon" href="icon.png" />
     </Head>
     
     <Box
@@ -540,12 +892,28 @@ useEffect(() => {
     <Box as="section" py={{ base: '4', md: '8'}}>
       <Container>
         <SimpleGrid columns={{ base: 1, md: 5}} gap={{ base: '5', md: '6'}}>
-          <HeaderStat label='Your Spore Balance' value={userSporeBalance ? formatNumber(userSporeBalance):0} />
-          <HeaderStat label='Your Power Balance' value={userPowerBalance ? formatNumber(userPowerBalance):0} />
-          <HeaderStat label='Your Condor Balance' value={userCondorBalance ? formatNumber(userCondorBalance):0} />
-          <HeaderStat label='Your NFT Balance' value={userNFTBalance ? parseInt(userNFTBalance):0} />
-          <HeaderStat label='Your Staked NFTs' value={userStakedBalance ? parseInt(userStakedBalance):0} />
+          <Skeleton isLoaded={!address ? true:userSporeBalance}>
+            <HeaderStat label='Your Spore Balance' value={userSporeBalance ? formatNumber(userSporeBalance):0} />
+          </Skeleton>
+          
+          <Skeleton isLoaded={!address ? true:userPowerBalance}>
+            <HeaderStat label='Your Power Balance' value={userPowerBalance ? formatNumber(userPowerBalance):0} />
+          </Skeleton>
+          
+          <Skeleton isLoaded={!address ? true:userCondorBalance}>
+            <HeaderStat label='Your Condor Balance' value={userCondorBalance ? formatNumber(userCondorBalance):0} />
+          </Skeleton>
+          
+          <Skeleton isLoaded={!address ? true:userNFTBalance}>
+            <HeaderStat label='Your NFT Balance' value={userNFTBalance ? parseInt(userNFTBalance):0} />
+          </Skeleton>
+          
+          <Skeleton isLoaded={!address ? true:userStakedBalance}>
+            <HeaderStat label='Your Staked NFTs' value={userStakedBalance ? parseInt(userStakedBalance):0} />
+          </Skeleton>
         </SimpleGrid>
+
+        
       </Container>
     </Box>
 
@@ -554,6 +922,14 @@ useEffect(() => {
         
         <SimpleGrid columns={{ base: 1, md: 3}} gap={{ base: 5, md: 6}}>
           <Stack spacing="8" borderWidth="1px" rounded="lg" padding="8" width="full">
+            <Center>
+              <Image
+                  htmlHeight='120px'
+                  htmlWidth='120px'
+                  src='/spore-power-logo.png'
+                  alt='Spore Power'
+                />
+            </Center>
             <Heading size="md">Get Spore Power</Heading>
             <Stack spacing="6">
               <li>You can get as much Spore Power Tokens as you need.</li>
@@ -579,14 +955,23 @@ useEffect(() => {
           </Stack>
 
           <Stack spacing="8" borderWidth="1px" rounded="lg" padding="8" width="full">
+          <Center>
+              <Image
+                  htmlHeight='140px'
+                  htmlWidth='140px'
+                  src='/condor-logo.svg'
+                  alt='Condor NFT'
+                />
+            </Center>
             <Heading size="md">Get Condor NFT</Heading>
             <Stack spacing="6">
-              <li>You can get as much Spore Power Tokens as you need.</li>
-              <li>Spore Power Tokens have 1:1 relationship ratio with Spore Token.</li>
-              <li>Spore Power Tokens can only be purchased with <a target="_blank" href="https://pancakeswap.finance/swap?inputCurrency=0x77f6a5f1b7a2b6d6c322af8581317d6bb0a52689" rel="noopener noreferrer"><strong>Spore Tokens from BSC on Pancakeswap</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
-              <li>Spore Power Tokens will represent your voting power on the <a target="_blank" href="https://snapshot.org/#/spore-engineering.eth" rel="noopener noreferrer"><strong>Snapshot DAO Governance</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
-              <li>All Spore Tokens from purchases will be transferred to the <a target="_blank" href="https://bscscan.com/address/0x79207f009733a9770ede24f7fd7b8e02b2a25222" rel="noopener noreferrer"><strong>Gnosis Safe DAO multisig burner wallet</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
-              <li>Read more abour Spore Power on <a target="_blank" href="https://spore-eng.medium.com/govern-vote-on-protocol-proposals-without-spending-on-gas-fees-dc8ea7818d33" rel="noopener noreferrer"><strong>this Medium article</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
+              <li>You can get as much NFTs as you need.</li>
+              <li>Condor NFTs follow the ERC1155 Standard.</li>
+              <li>Each NFT cost {priceCondorNFT ? formatNumber(priceCondorNFT):'~'} Spore Tokens.</li>
+              <li>NFTs can only be purchased with <a target="_blank" href="https://pancakeswap.finance/swap?inputCurrency=0x77f6a5f1b7a2b6d6c322af8581317d6bb0a52689" rel="noopener noreferrer"><strong>Spore Tokens from BSC on Pancakeswap</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
+              <li>Read more about the <a target="_blank" href="https://spore-eng.medium.com/welcome-condor-protocol-53268abb6ee1" rel="noopener noreferrer"><strong>initial idea and vision</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
+              <li>Learn more about Condor and <a target="_blank" href="https://spore-eng.medium.com/condor-protocol-mainnet-pre-mining-is-open-51c19ef5fc0a" rel="noopener noreferrer"><strong>how the staking mechanism works</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
+              <li>There's also an interesting <a target="_blank" href="https://github.com/condor-vision/v1-contracts-monorepo" rel="noopener noreferrer"><strong>cross-chain bridge proposal</strong><FaExternalLinkAlt style={{display:'inline', marginLeft: '5px'}} /></a></li>
             </Stack>
             <Stack spacing="8" borderWidth="1px" rounded="lg" padding="8" width="full">
               <InputGroup size='md'>
@@ -640,15 +1025,19 @@ useEffect(() => {
               </Button>
             </Stack>
             <Stack spacing="8" borderWidth="1px" rounded="lg" padding="8" width="full">
-              <Stat>
-                <StatLabel>Your Available Condor Token Rewards</StatLabel>
-                <Heading size={useBreakpointValue({ base: 'sm', md: 'md'})}>
-                  {userPendingRewards}
-                </Heading>
-              </Stat>
-              <Button colorScheme='linkedin' size="lg" fontSize="md" rightIcon={<FaCoins />} onClick={claimRewads}>
-                Claim Your Coins
-              </Button>
+                <Stat>
+                  <StatLabel>Your Available Condor Token Rewards</StatLabel>
+                  
+                  <Skeleton isLoaded={!address && !userPendingRewards || userPendingRewards == 0 ? true:userPendingRewards}>
+                    <Heading size={useBreakpointValue({ base: 'sm', md: 'md'})}>
+                      {userPendingRewards ? userPendingRewards:0}
+                    </Heading>
+                  </Skeleton>
+                </Stat>
+                
+                <Button colorScheme='linkedin' size="lg" fontSize="md" rightIcon={<FaCoins />} onClick={claimRewads}>
+                  Claim Your Coins
+                </Button>
             </Stack>
           </Box>
           

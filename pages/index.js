@@ -865,7 +865,7 @@ useEffect(() => {
               {isDesktop ? (
                 <Flex justify="space-between" flex="1">
                   <ButtonGroup variant="link" spacing="8">
-                    {['Condor NFT Staking Module'].map((item) => (
+                    {['Eco Vault Module'].map((item) => (
                       <Button key={item}>{item}</Button>
                     ))}
                   </ButtonGroup>
@@ -960,7 +960,7 @@ useEffect(() => {
                   htmlHeight='140px'
                   htmlWidth='140px'
                   src='/condor-logo.svg'
-                  alt='Condor NFT'
+                  alt='EcoVault'
                 />
             </Center>
             <Heading size="md">Get Condor NFT</Heading>
@@ -975,7 +975,7 @@ useEffect(() => {
             </Stack>
             <Stack spacing="8" borderWidth="1px" rounded="lg" padding="8" width="full">
               <InputGroup size='md'>
-                <Input pr='4.5rem' type='text' placeholder='NFT Amount' id='inputGetCondorNFT' />
+                <Input pr='4.5rem' type='text' placeholder='Vault Amount' id='inputGetCondorNFT' />
                 <InputRightElement width='4.5rem'>
                   <Button h='1.75rem' size='sm' onClick={getMaxCondorNFT}>
                     max

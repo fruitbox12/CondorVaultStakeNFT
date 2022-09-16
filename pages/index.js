@@ -865,7 +865,7 @@ useEffect(() => {
               {isDesktop ? (
                 <Flex justify="space-between" flex="1">
                   <ButtonGroup variant="link" spacing="8">
-                    {['Condor NFT Staking Module'].map((item) => (
+                    {['EcoVault Staking Module'].map((item) => (
                       <Button key={item}>{item}</Button>
                     ))}
                   </ButtonGroup>
@@ -901,15 +901,15 @@ useEffect(() => {
           </Skeleton>
           
           <Skeleton isLoaded={!address ? true:userCondorBalance}>
-            <HeaderStat label='Your Condor Balance' value={userCondorBalance ? formatNumber(userCondorBalance):0} />
+            <HeaderStat label='Your Eco Balance' value={userCondorBalance ? formatNumber(userCondorBalance):0} />
           </Skeleton>
           
           <Skeleton isLoaded={!address ? true:userNFTBalance}>
-            <HeaderStat label='Your NFT Balance' value={userNFTBalance ? parseInt(userNFTBalance):0} />
+            <HeaderStat label='Your Balance' value={userNFTBalance ? parseInt(userNFTBalance):0} />
           </Skeleton>
           
           <Skeleton isLoaded={!address ? true:userStakedBalance}>
-            <HeaderStat label='Your Staked NFTs' value={userStakedBalance ? parseInt(userStakedBalance):0} />
+            <HeaderStat label='Your Locked Tokens' value={userStakedBalance ? parseInt(userStakedBalance):0} />
           </Skeleton>
         </SimpleGrid>
 
